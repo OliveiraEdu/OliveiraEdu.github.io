@@ -1,0 +1,1013 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+
+    <title></title>
+    <link rel="stylesheet" href="dist/reveal.css" />
+    <link rel="stylesheet" href="dist/theme/black.css" id="theme" />
+    <link rel="stylesheet" href="plugin/highlight/zenburn.css" />
+	<link rel="stylesheet" href="css/layout.css" />
+	<link rel="stylesheet" href="plugin/customcontrols/style.css">
+
+
+
+    <script defer src="dist/fontawesome/all.min.js"></script>
+
+	<script type="text/javascript">
+		var forgetPop = true;
+		function onPopState(event) {
+			if(forgetPop){
+				forgetPop = false;
+			} else {
+				parent.postMessage(event.target.location.href, "app://obsidian.md");
+			}
+        }
+		window.onpopstate = onPopState;
+		window.onmessage = event => {
+			if(event.data == "reload"){
+				window.document.location.reload();
+			}
+			forgetPop = true;
+		}
+
+		function fitElements(){
+			const itemsToFit = document.getElementsByClassName('fitText');
+			for (const item in itemsToFit) {
+				if (Object.hasOwnProperty.call(itemsToFit, item)) {
+					var element = itemsToFit[item];
+					fitElement(element,1, 1000);
+					element.classList.remove('fitText');
+				}
+			}
+		}
+
+		function fitElement(element, start, end){
+
+			let size = (end + start) / 2;
+			element.style.fontSize = `${size}px`;
+
+			if(Math.abs(start - end) < 1){
+				while(element.scrollHeight > element.offsetHeight){
+					size--;
+					element.style.fontSize = `${size}px`;
+				}
+				return;
+			}
+
+			if(element.scrollHeight > element.offsetHeight){
+				fitElement(element, start, size);
+			} else {
+				fitElement(element, size, end);
+			}		
+		}
+
+
+		document.onreadystatechange = () => {
+			fitElements();
+			if (document.readyState === 'complete') {
+				if (window.location.href.indexOf("?export") != -1){
+					parent.postMessage(event.target.location.href, "app://obsidian.md");
+				}
+				if (window.location.href.indexOf("print-pdf") != -1){
+					let stateCheck = setInterval(() => {
+						clearInterval(stateCheck);
+						window.print();
+					}, 250);
+				}
+			}
+	};
+
+
+        </script>
+  </head>
+  <body>
+    <div class="reveal">
+      <div class="slides"><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+### *Enabling blockchains with Hyperledger Iroha*
+#### An introduction
+
+https://github.com/OliveiraEdu/iroha2_setup
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+## Workshop Objectives
+
+1 - Introduce Hyperledger Iroha 2
+
+2 - Provide guidance for building a Testnet
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+# Agenda
+
+- Hyperledger Foundation
+
+- Hyperledger Iroha
+
+- Iroha2
+
+- Overview
+
+- Concepts
+
+- Components
+
+- Architecture
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+# Agenda
+
+- Data Model
+
+- Smart Contracts
+
+- APIs and SDKs
+
+- Building a Testnet
+
+- Testing with the bash client
+
+- Sample Python app
+
+- Monitoring
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+## Hyperledger Foundation
+
+The open source, global ecosystem for enterprise-grade blockchain technologies that are at the core of critical developments and implementations around the world.
+</div>
+
+<aside class="notes"><p><a href="https://www.hyperledger.org/">Hyperledger Foundation</a></p>
+<p><a href="https://8112310.fs1.hubspotusercontent-na1.net/hubfs/8112310/Hyperledger/Offers/HL_Paper_HyperledgerOverview_102721.pdf">HL Paper</a></p>
+<p><a href="https://www.hyperledger.org/project-matrix">Project Matrix</a></p>
+</aside></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+## Hyperledger Iroha
+
+ - #### Design Principles
+
+	- Simplicity, modularity and, reliability
+
+	- Code quality
+
+	 - Fast and convenient transaction processing
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+## Hyperledger Iroha
+
+- #### Use Cases
+	- Public and private blockchains
+	
+	- NFTs
+	
+	- Cryptocurrency and fungible assets
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+## Hyperledger Iroha
+
+- #### Features
+	- Byzantine-fault-tolerant  (BFT)
+	
+	- WASM powered smart contract engine and ISI event-driven architecture
+	
+	- SDKs and client libraries (Python, Kotlin/Java, Rust, JavaScript)
+	
+	- Manage user accounts with a domain hierarchy and multi-signature transactions
+</div>
+
+<aside class="notes"><p><a href="https://www.investopedia.com/terms/d/distributed-ledger-technology-dlt.asp">DLT</a>
+<a href="https://en.wikipedia.org/wiki/Byzantine_fault">Byzantine-fault-tolerant</a> 
+<a href="https://hyperledger.github.io/iroha-2-docs/guide/blockchain/wasm.html">WASM</a>
+<a href="https://hyperledger.github.io/iroha-2-docs/guide/glossary.html#blockchain-ledgers">Blockchain ledger</a>
+<a href="https://hyperledger.github.io/iroha-2-docs/guide/glossary.html#fungible-assets">Fungible assets</a>
+<a href="https://hyperledger.github.io/iroha-2-docs/guide/glossary.html#non-fungible-assets">Non-fungible</a>
+<a href="https://hyperledger.github.io/iroha-2-docs/guide/blockchain/wasm.html">WebAssembly</a>
+<a href="https://hyperledger.github.io/iroha-2-docs/guide/blockchain/instructions.html">Iroha Special Instructions</a></p>
+</aside></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+## The paralllel between a blockchain and a computer - A metaphor
+
+- Client binary -> Keyboard
+- Iroha peer -> Processor
+- Blockchain -> Disk drive
+</div>
+
+<aside class="notes"><p>Any operation that is run on-chain is written in terms of <a href="https://hyperledger.github.io/iroha-2-docs/guide/blockchain/instructions.html">Iroha Special Instructions (ISI)</a>, and there is no other way of modifying the world state.</p>
+<p>Each interaction with the blockchain is done via: a <em>transaction</em>. A transaction is a collection of <em>instructions</em>, which are either glued together in sequence or compiled into what we affectionately call a <a href="https://hyperledger.github.io/iroha-2-docs/guide/blockchain/wasm.html">WASM</a> blob.</p>
+<p>To read the information encoded in the blocks of a blockchain (the current world state), you use <a href="https://hyperledger.github.io/iroha-2-docs/guide/blockchain/queries.html">queries</a>.</p>
+<p>Like a processor, Iroha accepts portable instructions that modify what&#39;s written to the blockchain, allow certain users to use the network, and lock others out.</p>
+<p>Any operation that is run on-chain is written in terms of <a href="https://hyperledger.github.io/iroha-2-docs/guide/blockchain/instructions.html">Iroha Special Instructions (ISI)</a>, and there is no other way of modifying the world state.</p>
+<p>Each interaction with the blockchain is done via: a <em>transaction</em>. A transaction is a collection of <em>instructions</em>, which are either glued together in sequence or compiled into what we affectionately call a <a href="https://hyperledger.github.io/iroha-2-docs/guide/blockchain/wasm.html">WASM</a> blob. You need these instructions to register an account, remove an account, add X amount of Y currency, and so on.</p>
+<p>To read the information encoded in the blocks of a blockchain (the current world state), you use <a href="https://hyperledger.github.io/iroha-2-docs/guide/blockchain/queries.html">queries</a>. Queries are submitted like instructions, but they&#39;re not tracked and recorded in blocks, so they&#39;re much more lightweight. If you use queries as part of complicated logic (e.g. inside WASM), they have a non-negligible impact on the size of the blocks. Queries that are only used to get information leave no trace in the blockchain.</p>
+<p><a href="https://hyperledger.github.io/iroha-2-docs/guide/bash.html"><code>iroha_client_cli</code></a></p>
+</aside></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+## Architecture
+
+<img src="Academic/Masters/SFCT2023/Images/Pasted image 20231018165632.png" alt="" style="object-fit: scale-down">
+</div>
+
+<aside class="notes"><p><a href="https://wiki.hyperledger.org/display/iroha/Architecture">Architecture</a></p>
+</aside></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+## Client - Peers Communications
+
+<img src="Academic/Masters/SFCT2023/Images/Pasted image 20231018170412.png" alt="" style="object-fit: scale-down">
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+## Hyperledger Iroha
+
+## Concepts
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+### Byzantine-fault-tolerant (BFT)
+
+A technique based on state machine replication, is the only known general technique that can mask arbitrary failures, including crashes,malicious attacks, and software errors. Thus, the behavior of a service employing BFT is indistinguishable from a service running on a correct server.
+</div>
+
+<aside class="notes"><p>In order for it to work optimally and be Byzantine-fault tolerant with the maximum number of faults allowed, it needs to be started with a set number of peers: <code>4</code>, <code>7</code>, <code>10</code>, ... <code>3f+1</code>, where <code>f</code> is the allowed number of faults. </p>
+<p><a href="https://web.cs.ucdavis.edu/~peisert/research/2014-OPODIS-BChain.pdf">BFT</a></p>
+</aside></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+## Peer
+
+An Iroha process instance to which other Iroha processes and client applications can connect. 
+A single machine can host several Iroha peers. 
+Peers are equal regarding their resources and capabilities, with an important exception: only one of the peers runs the genesis block at the bootstrapping stage.
+</div>
+
+<aside class="notes"><p>Other blockchains may refer to the same concept as a node or a validator.</p>
+<p>A peer can be a process on its host system. It also can be contained in a Docker container and a Kubernetes pod.</p>
+</aside></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+## View change
+
+A process that takes place in case of a failed attempt at consensus. Usually this entails the election of a new *Leader*.
+## Leader
+
+In an iroha network, a peer is selected randomly and granted the special privilege of forming the next block. This privilege can be revoked in networks that achieve Byzantine fault-torelance via view change.
+</div>
+
+<aside class="notes"><p><a href="https://hyperledger.github.io/iroha-2-docs/guide/glossary.html#byzantine-fault-tolerance-bft">Byzantine fault-torelance</a> 
+<a href="https://hyperledger.github.io/iroha-2-docs/guide/glossary.html#view-change">view change</a>
+<a href="https://hyperledger.github.io/iroha-2-docs/guide/glossary.html#leader">Leader</a>.</p>
+</aside></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+## Genesis Block
+
+The genesis block is the first block in your blockchain. It's never empty. The genesis bootstrap process setups the initialization of the blockchain according to directives on config files.
+</div>
+
+<aside class="notes"><p><a href="https://hyperledger.github.io/iroha-2-docs/guide/configure/genesis.html">genesis block</a></p>
+</aside></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+## Layered model for Blockchains
+
+<img src="Academic/Masters/SFCT2023/Images/Pasted image 20231018165945.png" alt="" style="object-fit: scale-down">
+
+
+[Dan Boneh](https://youtu.be/V0JdeRzVndI)
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+## Iroha Components x Layers
+
+<img src="Pasted image 20231024162028.png" alt="" style="object-fit: scale-down">
+</div>
+
+<aside class="notes"><p><a href="https://youtu.be/V0JdeRzVndI">Dan Boneh</a></p>
+</aside></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+## Iroha Components
+
+Rust modules containing Iroha functionality
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+### Sumeragi (Emperor)
+
+The Iroha module responsible for consensus. A BFT consensus algorithm. Iroha 2 can tolerate not only peers being inactive on the network, but also running malicious software and actively trying to falsify data in the blockchain. Even if someone gained control of a third of all of your network nodes, an Iroha 2 deployment is mathematically guaranteed to keep working.
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+### Torii (Gate)
+
+Module with the incoming request handling logic for the [peer](https://hyperledger.github.io/iroha-2-docs/guide/glossary.html#peer). It is used to receive, accept and route incoming instructions, and HTTP queries, as well as run-time configuration updates.
+
+----
+### Kura (Warehouse)
+
+Persistence-related logic. It handles storing the blocks, log rotation, block storage folder rotation, etc.
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+### Kagami(Teacher and Exemplar and/or looking glass)
+
+Generator for commonly used data. It can generate cryptographic key pairs, genesis blocks, documentation, etc.
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+### Hijiri (peer reputation system)
+
+Iroha's reputation system. It allows prioritising communication with [peers](https://hyperledger.github.io/iroha-2-docs/guide/glossary.html#peer) that have a good track-record, and reducing the harm that can be caused by malicious [peers](https://hyperledger.github.io/iroha-2-docs/guide/glossary.html#peer).
+</div>
+
+<aside class="notes"><p><a href="https://hyperledger.github.io/iroha-2-docs/guide/glossary.html">Glossary </a></p>
+</aside></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+### Transactions
+
+A **transaction** is a collection of [instructions](https://hyperledger.github.io/iroha-2-docs/guide/blockchain/instructions.html). The instructions within a transaction can be executed in a sequence or compiled into a [WASM blob](https://hyperledger.github.io/iroha-2-docs/guide/blockchain/wasm.html). All interactions in the blockchain are done via transactions.
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+### Consensus
+
+Each time you send a transaction to Iroha, it gets put into a queue. When it's time to produce a new block, the queue is emptied, and the consensus process begins.
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+### Consensus
+
+A special set of peers needs to take the transaction queue and reproduce the same world state. If the world state cannot be reproduced for some reason or another, none of the transactions get committed to a block.
+</div>
+
+<aside class="notes"><p>The consensus starts over from scratch by choosing a different special set of peers. There is a number of things that are fine-tuned: the number of peers in the voting process, the way in which subsequent voting peers are chosen, and the way in which the peers communicate that consensus has failed. Because this changes the view of the world, the process is called a <em>view change</em>. The exact reason for why the view was changed is encoded in the <em>view change proof</em>, but decoding that information is an advanced topic that we won&#39;t cover here.</p>
+<p>The reasoning behind this algorithm is simple: if someone had some evil peers and connected them to the existing network, if they tried to fake data, some good™ peers would not get the same (evil™) world state. If that&#39;s the case, the evil™ peers would not be allowed to participate in consensus, and you would eventually produce a block using only good™ peers.</p>
+<p>As a natural consequence, if any changes to the world state are made without the use of ISI, the good™ peers cannot know of them. They won&#39;t be able to reproduce the hash of the world state, and thus consensus will fail. The same thing happens if the peers have different instructions.</p>
+<p><a href="https://hyperledger.github.io/iroha-2-docs/guide/blockchain/consensus.html#fn1">Consensus</a>.</p>
+</aside></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+## Block Processing Validation
+
+<img src="Academic/Masters/SFCT2023/Images/Pasted image 20231018170731.png" alt="" style="object-fit: scale-down">
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+### Data Model - Relationship between domains, accounts and assets
+
+<img src="Academic/Masters/SFCT2023/Images/Pasted image 20231018134025.png" alt="" style="object-fit: scale-down">
+</div>
+
+<aside class="notes"><h3 id="data-model---relationship-between-domains-accounts-and-assets-in-detail">Data Model - Relationship between domains, accounts, and assets in detail</h3>
+<img src="Academic/Masters/SFCT2023/Images/Pasted image 20231018134225.png" alt="" style="object-fit: scale-down"></aside></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+## Entities
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+## Assets
+
+The assets can be **fungible** (every £1 is exactly the same as every other £1) or **non-fungible** (a £1 bill signed by the Queen of Hearts is not the same as a £1 bill signed by the King of Spades).
+
+The assets can also be **mintable** (you can make more of them) and **non-mintable** (you can only specify their initial quantity in the [genesis block](https://hyperledger.github.io/iroha-2-docs/guide/configure/genesis.html)).
+
+Assets can be [registered](https://hyperledger.github.io/iroha-2-docs/guide/blockchain/instructions.html#un-register), [minted or burned](https://hyperledger.github.io/iroha-2-docs/guide/blockchain/instructions.html#mint-burn), and transferred.
+</div>
+
+<aside class="notes"><p><a href="https://hyperledger.github.io/iroha-2-docs/guide/blockchain/assets.html">Assets</a></p>
+</aside></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+## Value Types
+
+Assets have different underlying value types. 
+- `AssetValueType.Quantity`: Unsigned 32-bit integer
+- `BigQuantity`: 128-bit integer
+- `Fixed`: Positive (though signed) 64-bit fixed-precision number with nine significant digits after the decimal point. 
+  
+All three types can be registered as either **mintable** or **non-mintable**.
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+### Store Asset Type
+
+The `Store` asset type is used for storing key-values in object's metadata.
+</div>
+
+<aside class="notes"><h2 id="choosing-between-the-store-and-metadata-assets">Choosing Between the Store and Metadata Assets</h2>
+<p>Use <code>metadata</code> for specific quantities and not be editable by other users. </p>
+<p>Use <code>Store</code> asset if the data exists in the blockchain and a default number type is not applicable. </p>
+<p><a href="https://hyperledger.github.io/iroha-2-docs/guide/configure/metadata-and-store-assets.html">Metadata and Store Assets</a></p>
+<p>Store lets you record data sequences and works as a dictionary, where the keys are strings, while the values are <code>Value</code> type instances that assume many types from <code>String</code> to <code>Ipv6Addr</code>.</p>
+</aside></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+### Metadata
+
+Metadata are key-value pairs that are attached to objects in the blockchain. The following can contain metadata:
+
+- domains
+- accounts
+- assets
+- asset definitions
+- triggers
+- transactions
+</div>
+
+<aside class="notes"><p><a href="https://hyperledger.github.io/iroha-2-docs/guide/blockchain/metadata.html">metadata</a></p>
+</aside></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+### Queries
+
+A request to read the World State View without modifying said view. 
+
+<img src="Academic/Masters/SFCT2023/Images/Pasted image 20231018170522.png" alt="" style="object-fit: scale-down">
+</div>
+
+<aside class="notes"><p><a href="https://hyperledger.github.io/iroha-2-docs/guide/blockchain/queries.html">queries</a></p>
+</aside></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+### Queries
+
+ Queries are small instruction-like objects that prompt a response from the current world state view.
+
+- Role
+- Permission
+- Account
+- Asset
+- Block
+- Domain
+- Peer
+- Transaction
+- Trigger
+</div>
+
+<aside class="notes"><p>Queries
+You can get the key value of an object metadata using <a href="https://hyperledger.github.io/iroha-2-docs/guide/blockchain/queries.html">queries</a>:</p>
+<ul>
+<li><a href="https://hyperledger.github.io/iroha-2-docs/guide/blockchain/queries.html#findaccountkeyvaluebyidandkey"><code>FindAccountKeyValueByIdAndKey</code></a></li>
+<li><a href="https://hyperledger.github.io/iroha-2-docs/guide/blockchain/queries.html#findassetkeyvaluebyidandkey"><code>FindAssetKeyValueByIdAndKey</code></a></li>
+<li><a href="https://hyperledger.github.io/iroha-2-docs/guide/blockchain/queries.html#findassetdefinitionkeyvaluebyidandkey"><code>FindAssetDefinitionKeyValueByIdAndKey</code></a></li>
+<li><a href="https://hyperledger.github.io/iroha-2-docs/guide/blockchain/queries.html#finddomainkeyvaluebyidandkey"><code>FindDomainKeyValueByIdAndKey</code></a></li>
+<li><a href="https://hyperledger.github.io/iroha-2-docs/guide/blockchain/queries.html#findtriggerkeyvaluebyidandkey"><code>FindTriggerKeyValueByIdAndKey</code></a></li>
+</ul>
+</aside></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+### Permissions
+
+Accounts need permission tokens for various actions on a blockchain, e.g. to mint or burn assets.
+
+In a public blockchain, most accounts have the same set of permissions. In a private blockchain, most accounts are assumed not to be able to do anything outside of their own account or domain unless explicitly granted said permission.
+</div>
+
+<aside class="notes"><p>Having a permission to do something means having a <code>PermissionToken</code> to do so. There are two ways for users to receive permission tokens: they can be granted directly or as a part of a <a href="https://hyperledger.github.io/iroha-2-docs/guide/blockchain/permissions.html#permission-groups-roles"><code>Role</code></a> (a set of permission tokens). Permissions are granted via <code>Grant</code> special instruction. Permission tokens and roles do not expire, they can only be removed using <code>Revoke</code> instruction.</p>
+<p><a href="https://hyperledger.github.io/iroha-2-docs/guide/blockchain/permissions.html">permissions </a></p>
+</aside></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+## Permissions
+
+Pre-configured tokens in Iroha 2 LTS version that allow to set or remove key-values in accounts, assets, or asset definitions:
+
+- [`CanSetKeyValueInUserMetadata`](https://hyperledger.github.io/iroha-2-docs/guide/blockchain/permissions.html#cansetkeyvalueinusermetadata)
+- [`CanRemoveKeyValueInUserMetadata`](https://hyperledger.github.io/iroha-2-docs/guide/blockchain/permissions.html#canremovekeyvalueinusermetadata)
+- [`CanSetKeyValueInUserAssets`](https://hyperledger.github.io/iroha-2-docs/guide/blockchain/permissions.html#cansetkeyvalueinuserassets)
+- [`CanRemoveKeyValueInUserAssets`](https://hyperledger.github.io/iroha-2-docs/guide/blockchain/permissions.html#canremovekeyvalueinuserassets)
+- [`CanSetKeyValueInAssetDefinition`](https://hyperledger.github.io/iroha-2-docs/guide/blockchain/permissions.html#cansetkeyvalueinassetdefinition)
+- [`CanRemoveKeyValueInAssetDefinition`](https://hyperledger.github.io/iroha-2-docs/guide/blockchain/permissions.html#canremovekeyvalueinassetdefinition)
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+## World
+
+The global entity that contains other entities:
+
+- Iroha [configuration parameters](https://hyperledger.github.io/iroha-2-docs/guide/configure/client-configuration.html)
+- the list of [trusted peers](https://hyperledger.github.io/iroha-2-docs/guide/configure/peer-configuration.html#trusted-peers)
+- registered domains
+- registered [triggers](https://hyperledger.github.io/iroha-2-docs/guide/blockchain/triggers.html)
+- registered [roles](https://hyperledger.github.io/iroha-2-docs/guide/blockchain/permissions.html#permission-groups-roles)
+- registered [permission token definitions](https://hyperledger.github.io/iroha-2-docs/guide/blockchain/permissions.html#permission-tokens)
+- permission tokens for all accounts
+- [the chain of runtime validators](https://hyperledger.github.io/iroha-2-docs/guide/blockchain/permissions.html#runtime-validators)
+</div>
+
+<aside class="notes"><p>When domains, peers, or roles are registered or unregistered, the <code>World</code> is the target of the (un)register <a href="https://hyperledger.github.io/iroha-2-docs/guide/blockchain/instructions.html">instruction</a>.</p>
+<p><a href="https://hyperledger.github.io/iroha-2-docs/guide/blockchain/world.html">world</a></p>
+</aside></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+## World State View (WSV)
+
+World State View is the in-memory representation of the current blockchain state. This includes all currently loaded blocks, with all of their contents, as well as peers elected for the current epoch.
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+#### Iroha Special Instructions are the only way to modify the world state
+
+<img src="Pasted image 20231025110619.png" alt="" style="object-fit: scale-down">
+</div>
+
+<aside class="notes"><table>
+<thead>
+<tr>
+<th>Instruction</th>
+<th>Objects</th>
+<th>Destination</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a href="https://hyperledger.github.io/iroha-2-docs/guide/blockchain/instructions.html#un-register">Register/Unregister</a></td>
+<td>accounts, domains, asset definitions, triggers, roles, peers</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://hyperledger.github.io/iroha-2-docs/guide/blockchain/instructions.html#mint-burn">Mint/Burn</a></td>
+<td>assets, triggers (trigger repetitions), permission tokens</td>
+<td>accounts</td>
+</tr>
+<tr>
+<td><a href="https://hyperledger.github.io/iroha-2-docs/guide/blockchain/instructions.html#setkeyvalue-removekeyvalue">SetKeyValue/RemoveKeyValue</a></td>
+<td>any objects that have <a href="https://hyperledger.github.io/iroha-2-docs/guide/blockchain/metadata.html">metadata</a>: accounts, domains, assets, asset definitions, triggers, transactions</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://hyperledger.github.io/iroha-2-docs/guide/blockchain/instructions.html#newparameter-setparameter">NewParameter/SetParameter</a></td>
+<td>Iroha configuration parameters</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://hyperledger.github.io/iroha-2-docs/guide/blockchain/instructions.html#grant-revoke">Grant/Revoke</a></td>
+<td><a href="https://hyperledger.github.io/iroha-2-docs/guide/blockchain/permissions.html">roles, permission tokens</a></td>
+<td>accounts</td>
+</tr>
+<tr>
+<td><a href="https://hyperledger.github.io/iroha-2-docs/guide/blockchain/instructions.html#transfer">Transfer</a></td>
+<td>assets</td>
+<td>accounts</td>
+</tr>
+<tr>
+<td><a href="https://hyperledger.github.io/iroha-2-docs/guide/blockchain/instructions.html#executetrigger">ExecuteTrigger</a></td>
+<td>triggers</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="https://hyperledger.github.io/iroha-2-docs/guide/blockchain/instructions.html#composite-instructions">If, Pair, Sequence</a></td>
+<td>any instructions</td>
+<td></td>
+</tr>
+</tbody></table>
+<p><a href="https://hyperledger.github.io/iroha-2-docs/#how-iroha-works">how Iroha operates</a>
+<a href="https://hyperledger.github.io/iroha-2-docs/guide/blockchain/instructions.html">iroha special instructions</a></p>
+</aside></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+## Public Blockchains - Registering accounts
+
+- In a _public_ blockchain, anyone should be able to register an account. You just need is a suitable client, a way to generate a private key of a suitable type (`ED25519`), and that's it.
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+## Private - Registering accounts
+
+- In a _private_ blockchain, you can have _any_ process for setting up an account: it could be that the registering instruction has to be submitted by a specific account, or by a smart contract that asks for other details. It could be that in a private blockchain registering new accounts is only possible on specific dates, or limited by a non-mintable (finite) token.
+</div>
+
+<aside class="notes"><p><a href="https://hyperledger.github.io/iroha-2-docs/guide/configure/modes.html#fn1">Modes</a></p>
+<p>Depending on how you decide to set up your <a href="https://hyperledger.github.io/iroha-2-docs/guide/configure/genesis.html">genesis block (<code>genesis.json</code>)</a>, the process for registering an account might go one of two ways. To understand why, let&#39;s talk about permission first.</p>
+<p>By default, Iroha allows <strong>all</strong> instructions to go through, until a permission validator that can restrict instruction execution has been registered. You can add permission validators to your genesis block by registering built-in <a href="https://hyperledger.github.io/iroha-2-docs/guide/blockchain/permissions.html">permission tokens</a> that we thought would be useful for <code>private</code> and <code>public</code> blockchain use-cases. However, in that case, the process of registering accounts is different.</p>
+<p>In a <em>typical</em> private blockchain, i.e. a blockchain without any unique processes for registering accounts, you need an account to register another account.</p>
+<p>Private and Public Blockchains</p>
+<p>Note that depending on how you decide to set up your <a href="https://hyperledger.github.io/iroha-2-docs/guide/configure/genesis.html">genesis block</a> in <code>genesis.json</code> (specifically, whether or not you include registration of permission tokens), the process for registering an account can be very different. </p>
+<ul>
+<li>In a <em>public</em> blockchain, anyone should be able to register an account.</li>
+<li>In a <em>private</em> blockchain, there can be a unique process for registering accounts. In a <em>typical</em> private blockchain, i.e. a blockchain without any unique processes for registering accounts, you need an account to register another account.</li>
+</ul>
+<p><a href="https://hyperledger.github.io/iroha-2-docs/guide/configure/modes.html">public and private blockchains</a></p>
+</aside></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+## Client Libraries
+
+- [Bash](https://hyperledger.github.io/iroha-2-docs/guide/bash.html)
+- [Python](https://hyperledger.github.io/iroha-2-docs/guide/python.html)
+- [Rust](https://hyperledger.github.io/iroha-2-docs/guide/rust.html)
+- [Kotlin/Java](https://hyperledger.github.io/iroha-2-docs/guide/kotlin-java.html)
+- [Javascript (TypeScript)](https://hyperledger.github.io/iroha-2-docs/guide/javascript.html)
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+### Building a Testnet
+
+[quick start](https://hyperledger.github.io/iroha-2-docs/guide/quick-start.html)
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+## Tests
+
+<img src="Pasted image 20231025110529.png" alt="" style="object-fit: scale-down">
+</div>
+
+<aside class="notes"><table>
+<thead>
+<tr>
+<th>Action</th>
+<th>Type</th>
+<th>Iroha Cli</th>
+<th>Iroha Python</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>List all domains</td>
+<td>Query</td>
+<td>Yes</td>
+<td></td>
+</tr>
+<tr>
+<td>Register a domain</td>
+<td>Transaction</td>
+<td>Yes</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>Register an account</td>
+<td>Transaction</td>
+<td>Yes</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>List all accounts</td>
+<td>Query</td>
+<td>Yes</td>
+<td></td>
+</tr>
+<tr>
+<td>Register an asset</td>
+<td>Transaction</td>
+<td>Yes</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>Mint an asset</td>
+<td>Transaction</td>
+<td>Yes</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>List all assets</td>
+<td>Query</td>
+<td>Yes</td>
+<td></td>
+</tr>
+<tr>
+<td>Transferring assets</td>
+<td>Transaction</td>
+<td>Yes</td>
+<td></td>
+</tr>
+<tr>
+<td>Burning assets</td>
+<td>Transaction</td>
+<td>Yes</td>
+<td></td>
+</tr>
+<tr>
+<td>Visualizing outputs</td>
+<td>Events</td>
+<td>Yes</td>
+<td>Yes</td>
+</tr>
+</tbody></table>
+</aside></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+## Client Configuration
+
+[Client config](https://hyperledger.github.io/iroha-2-docs/guide/configure/client-configuration.html)
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+## Testing with the bash client
+
+[Bash Client](https://hyperledger.github.io/iroha-2-docs/guide/build.html)
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+## Sample Python app
+
+[Python App]( https://hyperledger.github.io/iroha-2-docs/guide/python.html)
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+## Monitoring
+
+To conveniently and thoroughly monitor the performance of the network, we recommend using [`prometheus`](https://prometheus.io/). Prometheus is a program that can monitor your Iroha peer over a separate socket and provide different kinds of performance metrics.
+
+This data can help you find performance bottlenecks and optimise your Iroha configuration.
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+### How to use metrics
+
+To use metrics, you need to configure the `/metrics` endpoint in the [Iroha configuration](https://github.com/hyperledger/iroha/blob/iroha2-dev/docs/source/references/config.md).
+Use the IP address to access the data from the running Iroha instance:
+
+```
+curl http://127.0.0.1:8080/metrics
+```
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+## That's all folks!
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+## Useful Resources
+
+### Support
+
+https://hyperledger.github.io/iroha-2-docs/guide/support.html
+
+### Compatibility Matrix
+
+https://hyperledger.github.io/iroha-2-docs/guide/compatibility-matrix.html
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+## NGINX as reverse proxy for basic authentication
+
+https://hyperledger.github.io/iroha-2-docs/guide/configure/client-configuration.html#basic-authentication-credentials
+
+              +-------------------+
+              |   User's Browser  |
+              +-------------------+
+                      |
+                      v
+               +-----------+
+               |   Nginx   |
+               +-----------+
+                      |
+            +-----------------------+
+            |     Basic Auth        |
+            |   Verification (1)    |
+            +-----------------------+
+                      |
+                      v
+            +-----------------------+
+            |   Iroha Peers (2)     |
+            |   (Backend Servers)   |
+            +-----------------------+
+                      |
+            +-----------------------+
+            | Response to Nginx (3) |
+            +-----------------------+
+                      |
+                      v
+               +-----------+
+               |   Nginx   |
+               +-----------+
+                      |
+                      v
+              +-------------------+
+              |   User's Browser  |
+              +-------------------+
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+Quite Advanced Topics for the next session
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+## Filters
+
+Iroha uses _filter-map paradigm_ to monitor [events](https://hyperledger.github.io/iroha-2-docs/guide/blockchain/events.html). Let's look at different types of filters that can be used in Ir
+</div>
+
+<aside class="notes"><p><a href="https://hyperledger.github.io/iroha-2-docs/guide/blockchain/filters.html">filters</a></p>
+</aside></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+### Triggers
+
+Certain things, such as changing the state of an entity, committing a block or [executing an Iroha Special Instruction (ISI)](https://hyperledger.github.io/iroha-2-docs/guide/blockchain/triggers.html#supported-isi), can emit [events](https://hyperledger.github.io/iroha-2-docs/guide/blockchain/events.html), and you can attach _triggers_ to these events.
+
+A _trigger_ is a fairly basic entity that can be registered. Just like with Accounts, to register a trigger, you submit a `RegisterBox::Trigger`, which contains the necessary information:
+
+- an account ID, which should ideally be a brand new account that you register in the same transaction
+- an executable, which itself is either a `Vec<Instruction>` or a WASM blob
+- an `EventFilter`1(https://hyperledger.github.io/iroha-2-docs/guide/blockchain/triggers.html#fn1), which is something that combs through all2(https://hyperledger.github.io/iroha-2-docs/guide/blockchain/triggers.html#fn2) events and returns `true` when it finds the matching event to start the execution
+</div>
+
+<aside class="notes"><p><a href="https://hyperledger.github.io/iroha-2-docs/guide/blockchain/triggers.html">Triggers</a></p>
+</aside></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+### Events
+
+Events are emitted when certain things happen within the blockchain, e.g. a new account is created or a block is committed. TTypes of events:
+
+- pipeline events
+- data events
+- time events
+- trigger execution events
+</div>
+
+<aside class="notes"><p><a href="https://hyperledger.github.io/iroha-2-docs/guide/blockchain/events.html">Events</a></p>
+</aside></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+## Composite instructions
+
+Iroha also offers composite instructions (`If`, `Pair`, `Sequence`) to execute instructions in a certain way:
+
+- `If`: execute one of the two given instructions based on a given condition
+- `Sequence`: execute a provided vector of instructions in a given order
+- `Pair`: execute both provided instructions in a specified orde
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+### Web Assembly
+
+https://hyperledger.github.io/iroha-2-docs/guide/blockchain/wasm.html
+
+Working with WASM
+
+The main advantage of using the WASM format is that you can use any language you like (as long as it links statically against our helper library), and produce a 32-bit portable executable. The compilers take care of the optimisation, and you don't have to learn a new language (ahem... solidity... ahem), just to operate on the blockchain.
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+Smart Contracts
+
+Smart contracts are blockchain-based programs that run when a specific set of conditions is met. In Iroha smart contracts are implemented using [core Iroha special instructions](https://hyperledger.github.io/iroha-2-docs/guide/glossary.html#core-iroha-special-instructions).
+
+https://wiki.hyperledger.org/display/iroha/Scripting+Languages+and+Runtimes+for+Iroha2+Smart+Contracts
+
+[Iroha Special Instructions (ISI)](https://hyperledger.github.io/iroha-2-docs/guide/blockchain/instructions.html)
+
+[Web ASseMbly (WASM)](https://hyperledger.github.io/iroha-2-docs/guide/blockchain/wasm.html)
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+## Iroha Special Instructions (ISI)
+
+A library of smart contracts provided with Iroha. These can be invoked via either transactions or registered event listeners. More on ISI [here](https://hyperledger.github.io/iroha-2-docs/guide/blockchain/instructions.html).
+
+#### Utility Iroha Special Instructions
+
+This set of [isi](https://hyperledger.github.io/iroha-2-docs/guide/glossary.html#iroha-special-instructions-isi) contains logical instructions like `If`, I/O related like `Notify` and compositions like `Sequence`. They are mostly used as [custom instructions](https://hyperledger.github.io/iroha-2-docs/guide/glossary.html#custom-iroha-special-instruction).
+
+### Core Iroha Special Instructions
+
+[Special instructions](https://hyperledger.github.io/iroha-2-docs/guide/glossary.html#iroha-special-instructions-isi) provided with every Iroha deployment. These include some [domain-specific](https://hyperledger.github.io/iroha-2-docs/guide/glossary.html#domain-specific-iroha-special-instructions) as well as [utility instructions](https://hyperledger.github.io/iroha-2-docs/guide/glossary.html#utility-iroha-special-instructions).
+
+### Domain-specific Iroha Special Instructions
+
+Instructions related to domain-specific activities: assets, accounts, domains, peer management). These provide the tools necessary to make changes to the [World State View](https://hyperledger.github.io/iroha-2-docs/guide/glossary.html#world-state-view-wsv) in a secure and safe manner.
+
+### Custom Iroha Special Instruction
+
+Instructions provided in [Iroha Modules](https://hyperledger.github.io/iroha-2-docs/guide/glossary.html#iroha-modules), by clients or 3rd parties. These can only be built using [the Core Instructions](https://hyperledger.github.io/iroha-2-docs/guide/glossary.html#core-iroha-special-instructions). Forking and modifying the Iroha source code is not recommended, as special instructions not agreed-upon by [peers](https://hyperledger.github.io/iroha-2-docs/guide/glossary.html#peer) in an Iroha deployment will be treated as faults, thus [peers](https://hyperledger.github.io/iroha-2-docs/guide/glossary.html#peer) running a modified instance will have their access revoked.
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+## Public Key Cryptography
+
+https://hyperledger.github.io/iroha-2-docs/guide/configure/keys.html
+
+## Keys for Deploying a Network
+
+Keeping in mind what we said above about key cryptography, note that if you're deploying your own network, you should change the keys in all three configuration files:
+
+- peer configuration: [`configs/peer/config.json`](https://hyperledger.github.io/iroha-2-docs/guide/configure/peer-configuration.html)
+- client configuration: [`configs/client_cli/config.json`](https://hyperledger.github.io/iroha-2-docs/guide/configure/client-configuration.html)
+- genesis block: [`configs/peer/genesis.json`](https://hyperledger.github.io/iroha-2-docs/guide/configure/genesis.html)
+</div></script></section><section  data-markdown><script type="text/template"><!-- .slide: class="drop" -->
+<div class="" style="position: absolute; left: 0px; top: 0px; height: 700px; width: 960px; min-height: 700px; display: flex; flex-direction: column; align-items: center; justify-content: center" absolute="true">
+
+## Asset Structure
+
+<img src="Academic/Masters/SFCT2023/Images/Pasted image 20231018135042.png" alt="" style="object-fit: scale-down">
+</div></script></section></div>
+    </div>
+
+    <script src="dist/reveal.js"></script>
+
+    <script src="plugin/markdown/markdown.js"></script>
+    <script src="plugin/highlight/highlight.js"></script>
+    <script src="plugin/zoom/zoom.js"></script>
+    <script src="plugin/notes/notes.js"></script>
+    <script src="plugin/math/math.js"></script>
+	<script src="plugin/mermaid/mermaid.js"></script>
+	<script src="plugin/chart/chart.min.js"></script>
+	<script src="plugin/chart/plugin.js"></script>
+	<script src="plugin/customcontrols/plugin.js"></script>
+
+    <script>
+      function extend() {
+        var target = {};
+        for (var i = 0; i < arguments.length; i++) {
+          var source = arguments[i];
+          for (var key in source) {
+            if (source.hasOwnProperty(key)) {
+              target[key] = source[key];
+            }
+          }
+        }
+        return target;
+      }
+
+	  function isLight(color) {
+		let hex = color.replace('#', '');
+
+		// convert #fff => #ffffff
+		if(hex.length == 3){
+			hex = `${hex[0]}${hex[0]}${hex[1]}${hex[1]}${hex[2]}${hex[2]}`;
+		}
+
+		const c_r = parseInt(hex.substr(0, 2), 16);
+		const c_g = parseInt(hex.substr(2, 2), 16);
+		const c_b = parseInt(hex.substr(4, 2), 16);
+		const brightness = ((c_r * 299) + (c_g * 587) + (c_b * 114)) / 1000;
+		return brightness > 155;
+	}
+
+	var bgColor = getComputedStyle(document.documentElement).getPropertyValue('--r-background-color').trim();
+	var isLight = isLight(bgColor);
+
+	if(isLight){
+		document.body.classList.add('has-light-background');
+	} else {
+		document.body.classList.add('has-dark-background');
+	}
+
+      // default options to init reveal.js
+      var defaultOptions = {
+        controls: true,
+        progress: true,
+        history: true,
+        center: true,
+        transition: 'default', // none/fade/slide/convex/concave/zoom
+        plugins: [
+          RevealMarkdown,
+          RevealHighlight,
+          RevealZoom,
+          RevealNotes,
+          RevealMath.MathJax3,
+		  RevealMermaid,
+		  RevealChart,
+		  RevealCustomControls,
+        ],
+
+
+    	allottedTime: 120 * 1000,
+
+		mathjax3: {
+			mathjax: 'plugin/math/mathjax/tex-mml-chtml.js',
+		},
+		markdown: {
+		  gfm: true,
+		  mangle: true,
+		  pedantic: false,
+		  smartLists: false,
+		  smartypants: false,
+		},
+
+		mermaid: {
+			theme: isLight ? 'default' : 'dark',
+		},
+
+		customcontrols: {
+			controls: [
+			]
+		},
+      };
+
+      // options from URL query string
+      var queryOptions = Reveal().getQueryHash() || {};
+
+      var options = extend(defaultOptions, {"width":960,"height":700,"margin":0.04,"controls":true,"progress":true,"slideNumber":false,"transition":"slide","transitionSpeed":"default"}, queryOptions);
+    </script>
+
+    <script>
+      Reveal.initialize(options);
+    </script>
+  </body>
+
+  <!-- created with Advanced Slides -->
+</html>
