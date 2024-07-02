@@ -2,10 +2,9 @@
 
 ## Check my latest workshops
 
-### [SCFT 2023](https://github.com/OliveiraEdu/OliveiraEdu.github.io/blob/main/SFCT%202023%20-%20Workshop/index.html)
+### [SCFT 2023](https://oliveiraedu.github.io/SFCT%202023%20-%20Workshop/#/)
 
-### [SEMAC 2023](https://github.com/OliveiraEdu/OliveiraEdu.github.io/blob/main/SEMAC%202023/index.html)
-
+### [SEMAC 2023](https://oliveiraedu.github.io/SEMAC%202023/#/)
 ---
 
 You can reach me at eduardocostaoliveira@gmail.com
