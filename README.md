@@ -1,4 +1,4 @@
-# My personal page
+# Eduardo Oliveira
 
 ## Check my latest workshops
 
