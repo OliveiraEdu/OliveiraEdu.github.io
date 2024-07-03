@@ -7,7 +7,7 @@
 ### [SEMAC 2023](https://oliveiraedu.github.io/SEMAC%202023/#/)
 ---
 
-[You can reach me at eduardocostaoliveira@gmail.com](eduardocostaoliveira@gmail.com)
+[You can reach me at](eduardocostaoliveira@gmail.com)
 
 
 
